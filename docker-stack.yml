@@ -64,9 +64,9 @@ services:
           - node.role == worker
 
 
-  database:
+   database:
 
-    image: mysql:8.0
+    image: karthibalaraman/employee-database:latest
 
     environment:
 
@@ -82,9 +82,8 @@ services:
 
       - mysql-data:/var/lib/mysql
 
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-
     networks:
+
       - employee-network
 
     deploy:
@@ -92,11 +91,16 @@ services:
       replicas: 1
 
       restart_policy:
+
         condition: on-failure
 
       placement:
+
         constraints:
+
           - node.role == worker
+
+      
 
 
 networks:
