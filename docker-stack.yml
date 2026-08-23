@@ -1,0 +1,113 @@
+version: "3.8"
+
+services:
+
+  frontend:
+
+    image: karthibalaraman/employee-frontend:latest
+
+    ports:
+      - "80:80"
+
+    networks:
+      - employee-network
+
+    depends_on:
+      - backend
+
+    deploy:
+
+      replicas: 2
+
+      restart_policy:
+        condition: on-failure
+
+      update_config:
+        parallelism: 1
+        delay: 10s
+
+      placement:
+        constraints:
+          - node.role == worker
+
+
+  backend:
+
+    image: karthibalaraman/employee-backend:latest
+
+    networks:
+      - employee-network
+
+    environment:
+
+      DB_HOST: database
+
+      DB_USER: employeeuser
+
+      DB_PASSWORD: employeepassword
+
+      DB_NAME: employee_db
+
+    deploy:
+
+      replicas: 2
+
+      restart_policy:
+        condition: on-failure
+
+      update_config:
+        parallelism: 1
+        delay: 10s
+
+      placement:
+        constraints:
+          - node.role == worker
+
+
+  database:
+
+    image: mysql:8.0
+
+    environment:
+
+      MYSQL_ROOT_PASSWORD: rootpassword
+
+      MYSQL_DATABASE: employee_db
+
+      MYSQL_USER: employeeuser
+
+      MYSQL_PASSWORD: employeepassword
+
+    volumes:
+
+      - mysql-data:/var/lib/mysql
+
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    networks:
+      - employee-network
+
+    deploy:
+
+      replicas: 1
+
+      restart_policy:
+        condition: on-failure
+
+      placement:
+        constraints:
+          - node.role == worker
+
+
+networks:
+
+  employee-network:
+
+    driver: overlay
+
+    attachable: true
+
+
+volumes:
+
+  mysql-data:
